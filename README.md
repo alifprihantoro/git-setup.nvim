@@ -20,3 +20,29 @@ easy use git, with telescope and wichkey.
   end
 }
 ```
+
+## Api
+- git cmd main
+```lua
+M.gitMainCmd({
+  add = true,          -- use git add . ? => boolean|nil
+  commit = true,       -- use commit? => boolean|nil
+  ssh = true,          -- use ssh? => boolean|nil
+  pull = true,         -- use pull? => boolean|nil
+  pull_quest = true,   -- ask use pull => boolean|nil
+  push = true,         -- push => boolean|nil
+  remote_quest = true, -- custom remote => boolean|nil
+  remote = true,       -- default remote => string
+})
+```
+
+## Telescope Register
+- `Telescope git_flow` : checkout and merge
+- `Telescope git_pull` : pull request from remote
+- `Telescope git_commit_ssh_push` : commit ssh push with option remote
+
+## Lisensi
+The `muryp-git-setup` plugin is distributed under the **Apache License 2.0**. Please refer to the `LICENSE` file for more information about this license.
+
+## Contributing
+We greatly appreciate contributions from anyone can produce **issue** or **maintaine code** to help this repo. Please read `CONTRIBUTE.md` for more info.
