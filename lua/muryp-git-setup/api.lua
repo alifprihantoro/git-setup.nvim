@@ -4,7 +4,7 @@ local M = {}
 ---@return string : check is commit or conflict
 local function checkCommitConflict()
   local isTroble = vim.fn.system(
-  "[[ $(git diff --check) == '' ]] && echo $([[ $(git status --porcelain) ]] && echo 'true' || echo 'no_commit...') || echo 'conflict...'")
+    "[[ $(git diff --check) == '' ]] && echo $([[ $(git status --porcelain) ]] && echo 'true' || echo 'no_commit...') || echo 'conflict...'")
   if isTroble == 'true\n' then
     return 'git add . && git commit'
   else
@@ -30,9 +30,15 @@ M.addSsh = function(FIRST_LETTER)
   return FIRST_LETTER .. [[eval "$(ssh-agent -s)" && ssh-add ]] .. SSH_PATH
 end
 ---@param DEFAULT_REMOTE string
+---@param isTelescope true|nil
 ---@return string
-M.gitPush = function(DEFAULT_REMOTE)
-  local REMOTE = vim.fn.input('what repo ? ', DEFAULT_REMOTE)
+M.gitPush = function(DEFAULT_REMOTE, isTelescope)
+  local REMOTE
+  if isTelescope then
+    REMOTE = DEFAULT_REMOTE
+  else
+    REMOTE = vim.fn.input('what repo ? ', DEFAULT_REMOTE)
+  end
   local PULL = vim.fn.input('Use PUll (y/n) ? ')
   local BRANCH = vim.fn.system('git symbolic-ref --short HEAD'):gsub('\n', ''):gsub('\r', '')
   local TARGET_HOST = REMOTE .. ' ' .. BRANCH
@@ -47,15 +53,16 @@ M.gitPush = function(DEFAULT_REMOTE)
   return PULL .. PUSH
 end
 ---@param opts string | nil remote
+---@param isTelescope true | nil
 ---@return nil vim.cmd commit, pull, push with ssh,
-M.gitSshPush = function(opts)
+M.gitSshPush = function(opts, isTelescope)
   local DEFAULT_REMOTE
   if opts == nil then
     DEFAULT_REMOTE = 'origin'
   else
     DEFAULT_REMOTE = opts
   end
-  return vim.cmd('term ' .. M.gitCommitCmd() .. M.addSsh(' && ') .. M.gitPush(DEFAULT_REMOTE))
+  return vim.cmd('term ' .. M.gitCommitCmd() .. M.addSsh(' && ') .. M.gitPush(DEFAULT_REMOTE, isTelescope))
 end
 ---@param opts string | nil remote name
 ---@return nil vim.cmd pull with ssh,
@@ -102,7 +109,7 @@ end
 M.push = function()
   local LIST_REMOTE = vim.fn.systemlist("git remote") --- @type string[]
   local function callback(selection)
-    M.gitSshPush(selection)
+    M.gitSshPush(selection,true)
   end
   picker({
     opts = LIST_REMOTE,

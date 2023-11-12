@@ -1,16 +1,15 @@
----@diagnostic disable: duplicate-doc-field, duplicate-doc-alias
+---@diagnostic disable: duplicate-doc-field, duplicate-doc-alias, missing-fields
 ---@class opts
 ---@field silent boolean
 ---@field noremap boolean
 ---@field nowait boolean
 --
 ---@class optsWK:opts
----@field mode string|string[]|nil
+---@field mode string|string[]
 ---@field buffer number|nil
 ---@field prefix string The prefix to be added to the argument
----@field noremap boolean|nil The prefix to be added to the argument
 
----@alias cmd string
+---@alias cmd string|function
 ---@alias description string
 --
 ---@class data:optsWK
@@ -36,17 +35,18 @@ local function normalMap(mappings, opts)
       else
         mode = mapping.mode or opts.mode
       end
+      ---@type opts options for for how map execute
       local opts2 = {}
       local isNowait = mapping.nowait or opts.nowait
-      if isNowait ~= nil and type(isNowait) == "boolean" then
+      if isNowait ~= nil and type(isNowait) == 'boolean' then
         opts2.nowait = isNowait
       end
       local isNoremap = mapping.noremap or opts.noremap
-      if isNoremap ~= nil and type(isNoremap) == "boolean" then
+      if isNoremap ~= nil and type(isNoremap) == 'boolean' then
         opts2.noremap = isNoremap
       end
       local isSilent = mapping.silent or opts.silent
-      if isSilent ~= nil and type(isSilent) == "boolean" then
+      if isSilent ~= nil and type(isSilent) == 'boolean' then
         opts2.silent = isSilent
       end
       --end opts
@@ -73,7 +73,7 @@ return function(mappings, opts)
   -- cek is whiki installed
   if isWk then
     wk.register(mappings, opts)
-    wk.setup()
+    -- wk.setup()
   else
     normalMap(mappings, opts)
   end
