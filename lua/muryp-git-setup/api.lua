@@ -1,4 +1,4 @@
-local picker = require "muryp-git-setup.utils.picker"
+local picker = require "muryp-git-setup.picker"
 
 local M = {}
 ---@return string : check is commit or conflict
