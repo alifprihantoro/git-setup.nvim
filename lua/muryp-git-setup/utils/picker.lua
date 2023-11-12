@@ -1,4 +1,4 @@
----@param Arg {callBack:function,opts:Object,PREVIEW_OPTS:'GH_ISSUE'|'FILE'|nil,title:string}
+---@param Arg {callBack:function,opts:table,PREVIEW_OPTS:'GH_ISSUE'|'FILE'|nil,title:string}
 ---@return nil : Telescope custom list
 return function(Arg)
   local pickers      = require "telescope.pickers"
