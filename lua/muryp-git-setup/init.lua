@@ -2,6 +2,7 @@ local MAPS        = require('muryp-git-setup.maps')
 local M           = {}
 
 _G.MURYP_SSH_PATH = { '$HOME/.ssh/github' }
+_G.MURYP_REMOT_DEFAULT = 'origin'
 M.MAPS            = MAPS
 
 local isWk, plug  = pcall(require, 'telescope.builtin')

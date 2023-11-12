@@ -1,134 +1,154 @@
 local picker = require "muryp-git-setup.picker"
-
 local M = {}
----@return string : check is commit or conflict
-local function checkCommitConflict()
-  local isTroble = vim.fn.system(
-    "[[ $(git diff --check) == '' ]] && echo $([[ $(git status --porcelain) ]] && echo 'true' || echo 'no_commit...') || echo 'conflict...'")
-  if isTroble == 'true\n' then
-    return 'git add . && git commit'
-  else
-    return 'echo ' .. string.gsub(isTroble, '\n', '')
-  end
-end
----@return string : commit cmd
-M.gitCommitCmd = function()
-  return "cd %:p:h && cd $(git rev-parse --show-toplevel) && " .. checkCommitConflict()
-end
+---@class optsGitMainCmd : {ssh?:boolean,add?:boolean,commit?:boolean,pull?:boolean,push?:boolean,pull_quest?:boolean,remote_quest?:boolean,remote?:string} opts what todo
 
-M.gitCommit = function()
-  vim.cmd('term ' .. M.gitCommitCmd())
-end
----@param FIRST_LETTER string FIRST_LETTER cmd
 ---@return string
-M.addSsh = function(FIRST_LETTER)
+M.SSH_CMD = function()
   local SshPath = _G.MURYP_SSH_PATH
   local SSH_PATH = ''
   for _, PATH in pairs(SshPath) do
     SSH_PATH = SSH_PATH .. PATH .. ' '
   end
-  return FIRST_LETTER .. [[eval "$(ssh-agent -s)" && ssh-add ]] .. SSH_PATH
-end
----@param DEFAULT_REMOTE string
----@param isTelescope true|nil
----@return string
-M.gitPush = function(DEFAULT_REMOTE, isTelescope)
-  local REMOTE
-  if isTelescope then
-    REMOTE = DEFAULT_REMOTE
-  else
-    REMOTE = vim.fn.input('what repo ? ', DEFAULT_REMOTE)
-  end
-  local PULL = vim.fn.input('Use PUll (y/n) ? ')
-  local BRANCH = vim.fn.system('git symbolic-ref --short HEAD'):gsub('\n', ''):gsub('\r', '')
-  local TARGET_HOST = REMOTE .. ' ' .. BRANCH
-  local PUSH =
-      ' [[ $(git diff --check) == "" ]] && git push ' ..
-      TARGET_HOST .. ' || echo "\\033[31merror: you have conflict:\\n$(git diff --check)"'
-  if PULL == 'y' or PULL == 'Y' then
-    PULL = " && git pull " .. TARGET_HOST .. ' &&'
-  else
-    PULL = ' &&'
-  end
-  return PULL .. PUSH
-end
----@param opts string | nil remote
----@param isTelescope true | nil
----@return nil vim.cmd commit, pull, push with ssh,
-M.gitSshPush = function(opts, isTelescope)
-  local DEFAULT_REMOTE
-  if opts == nil then
-    DEFAULT_REMOTE = 'origin'
-  else
-    DEFAULT_REMOTE = opts
-  end
-  return vim.cmd('term ' .. M.gitCommitCmd() .. M.addSsh(' && ') .. M.gitPush(DEFAULT_REMOTE, isTelescope))
-end
----@param opts string | nil remote name
----@return nil vim.cmd pull with ssh,
-M.pull = function(opts)
-  local DEFAULT_REMOTE
-  if opts == nil then
-    DEFAULT_REMOTE = 'origin'
-  else
-    DEFAULT_REMOTE = opts
-  end
-  local BRANCH = vim.fn.system('git symbolic-ref --short HEAD') ---@type string
-  vim.cmd('term ' .. M.addSsh('') .. '&& git pull ' .. DEFAULT_REMOTE .. ' ' .. BRANCH)
-end
----@return nil vim.cmd push single with ssh
-M.singlePush = function()
-  return vim.cmd(M.addSsh('term ') .. M.gitPush('origin'))
+  return [[eval "$(ssh-agent -s)" && ssh-add ]] .. SSH_PATH
 end
 
--- with telescope
+---@param callback function callback if success
+---@return function exec when not conflict
+local cekConflick = function(callback)
+  local isConflict = vim.fn.system('git diff --check')
+  if isConflict == '' then
+    return callback()
+  else
+    return vim.api.nvim_err_writeln(isConflict)
+  end
+end
+---@param opts optsGitMainCmd is return string or vim cmd
+---@return function : return cmd git ?add, ?commit, ?pull, ?push with ?ssh
+M.gitMainCmd = function(opts)
+  return cekConflick(function()
+    local isCommited = vim.fn.system('[[ $(git status --porcelain) ]] && echo true')
+    local CMD = ''
+    if isCommited ~= '' and opts.commit == true then
+      if opts.add == true then
+        CMD = CMD .. 'git add . && '
+      end
+      CMD = CMD .. 'git commit && '
+    end
+    local SSH_CMD = ''
+    if opts.ssh == true then
+      SSH_CMD = M.SSH_CMD() .. ' && '
+    end
+    local REMOTE = _G.MURYP_REMOT_DEFAULT
+    if opts.remote ~= nil then
+      REMOTE = opts.remote
+    end
+    if opts.remote_quest ~= nil then
+      REMOTE = vim.fn.input('what remote ? ', REMOTE)
+      if REMOTE == '' then
+        return vim.api.nvim_err_writeln('ERR: please input remote name')
+      end
+    end
+    local isPull = ''
+    local TARGET_HOST = ''
+    if opts.pull == true or opts.push == true then
+      BRANCH = vim.fn.system('git symbolic-ref --short HEAD'):gsub('\n', ''):gsub('\r', '')
+      TARGET_HOST = REMOTE .. ' ' .. BRANCH
+    end
+    if opts.pull_quest == true then
+      isPull = vim.fn.input('Use PUll (y/n) ? ')
+    end
+    if opts.pull == true or isPull == 'y' or isPull == 'Y' then
+      vim.cmd('term ' .. SSH_CMD .. 'git pull ' .. TARGET_HOST)
+    end
+    cekConflick(function()
+      if opts.push == true then
+        CMD = CMD .. 'git push ' .. TARGET_HOST
+      end
+      if CMD ~= '' then
+        vim.cmd('term ' .. SSH_CMD .. CMD)
+      end
+    end)
+  end)
+end
+
+
+--- TELESCOPE
+
+---@return nil gitPull git pull with opts remote
+M.listRemote = function(callback)
+  local LIST_REMOTE = vim.fn.systemlist("git remote") --- @type string[]
+  picker({
+    opts = LIST_REMOTE,
+    callBack = callback,
+    title = "choose remote"
+  })
+end
+
+---@param selection string|string[] user select
+---@param opts optsGitMainCmd
+---@return nil callback exec callback with selection in first arg
+local cmdGitMain = function(selection, opts)
+  ---defind cmd to exec
+  ---@param remote string user select
+  local cmd = function(remote)
+    opts.remote = remote
+    M.gitMainCmd(opts)
+  end
+  if type(selection) == 'table' then
+    for _, v in pairs(selection) do
+      cmd(v)
+    end
+  else
+    cmd(selection)
+  end
+end
+
+---@return nil gitSshPush git commit, pull, push with opts remote
+M.push = function()
+  ---defind callback/after enter
+  ---@param selection string|string[] user select
+  local callback = function(selection)
+    cmdGitMain(selection,
+      {
+        add = true,
+        commit = true,
+        ssh = true,
+        pull_quest = true,
+        push = true,
+      })
+  end
+  M.listRemote(callback)
+end
+
+---@return nil gitPull git pull with opts remote
+M.pull = function()
+  ---defind callback/after enter
+  ---@param selection string|string[] user select
+  local callback = function(selection)
+    cmdGitMain(selection,
+      {
+        ssh = true,
+        pull = true,
+      })
+  end
+  M.listRemote(callback)
+end
 
 M.gitFlow = function()
   local ListBranch = {} ---@type string[]
-  local LIST_BRANCH = vim.api.nvim_command_output('echo system("git branch")') ---@type string
-  local NAME_CURRENT_BRANCH = vim.api.nvim_command_output('echo system("echo $(git symbolic-ref --short HEAD)")') ---@type string
-  local BRANCH_DEL_ENTER = string.gsub(NAME_CURRENT_BRANCH, "\n", "")
-  ---check is not current branch and *
-  for BRANCH in string.gmatch(LIST_BRANCH, "%S+") do
-    if BRANCH ~= "*" and BRANCH ~= BRANCH_DEL_ENTER then
-      table.insert(ListBranch, BRANCH)
-    end
+  local NAME_CURRENT_BRANCH = vim.fn.system('echo $(git symbolic-ref --short HEAD)'):gsub('\n', ''):gsub('\r', '') ---@type string
+  ListBranch = {}
+  for branch in io.popen("git branch --list | grep -v $(git rev-parse --abbrev-ref HEAD)"):lines() do
+    table.insert(ListBranch, branch)
   end
   local function callback(selection)
-    print(vim.inspect(vim.cmd('!git checkout ' .. selection)))
+    vim.cmd('term git checkout ' .. selection .. ' && git merge ' .. NAME_CURRENT_BRANCH)
   end
+
   picker({
     opts = ListBranch,
     callBack = callback,
     title = "choose branch want to merge"
   })
 end
-
-
----@return nil gitSshPush git commit, pull, push with opts remote
-M.push = function()
-  local LIST_REMOTE = vim.fn.systemlist("git remote") --- @type string[]
-  local function callback(selection)
-    M.gitSshPush(selection,true)
-  end
-  picker({
-    opts = LIST_REMOTE,
-    callBack = callback,
-    title = "choose remote want to push"
-  })
-end
-
----@return nil gitPull git pull with opts remote
-M.pullList = function()
-  local LIST_REMOTE = vim.fn.systemlist("git remote") --- @type string[]
-  local function callback(selection)
-    M.pull(selection)
-  end
-  picker({
-    opts = LIST_REMOTE,
-    callBack = callback,
-    title = "choose remote want to pull"
-  })
-end
-
 return M
