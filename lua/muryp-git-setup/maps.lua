@@ -4,7 +4,7 @@ return function()
     name = "GIT",
     b = { ':Telescope git_branches<CR>', "BRANCH" },
     f = { ':Telescope git_flow<CR>', "FLOW" },
-    s = { ':Telescope git_status<CR>', "GIT_STATUS" },
+    S = { ':Telescope git_status<CR>', "GIT_STATUS" },
     c = { ':term git commit<CR>', "COMMIT" },
     v = { function()
       M.gitMainCmd({
@@ -74,6 +74,24 @@ return function()
       name = "WITH TELESCOPE OPTS",
       p = { ':Telescope git_commit_ssh_push<CR>', "COMMIT+SSH+PULL+PUSH" },
       P = { ':Telescope git_pull<CR>', "PULL" },
+    },
+    d = {
+      name = "DIFF_VIEW",
+      o = { ':DiffviewOpen<CR>', 'DIFF_OPEN' },
+      c = { ':DiffviewClose<CR>', 'DIFF_CLOSE' },
+      t = { ':DiffviewFileHistory<CR>', 'FILE_HISTORY' },
+    },
+    B = { ':Gitsigns blame_line<CR>', 'BLAME_LINE' },
+    C = {
+      name = "CONFLICT",
+      l = { ':GitConflictListQf<CR>', 'LIST' },
+      r = { ':GitConflictRefresh<CR>', 'REFRES' },
+      n = { ':GitConflictNextConflict<CR>', 'NEXT' },
+      p = { ':GitConflictPrevConflict<CR>', 'PREV' },
+      t = { ':GitConflictChooseTheirs<CR>', 'CHOOSE_THEIR' },
+      b = { ':GitConflictChooseBoth<CR>', 'CHOOSE_BOTH' },
+      o = { ':GitConflictChooseOur<CR>', 'CHOOSE_OUR' },
+      N = { ':GitConflictChooseNone<CR>', 'CHOOSE_NONE' },
     },
   }
 end
