@@ -10,15 +10,30 @@
 easy use git, with telescope and wichkey.
 ## requirement
 - nvim 0.8+ (recommendation)
+- [lewis6991/gitsigns.nvim](https://github.com/lewis6991/gitsigns.nvim)
+- [sindrets/diffview.nvim](https://github.com/sindrets/diffview.nvim)
+- [akinsho/git-conflict.nvim](https://github.com/akinsho/git-conflict.nvim)
+- [folke/which-key.nvim](https://github.com/folke/which-key.nvim)
+- [nvim-telescope/telescope.nvim](https://github.com/nvim-telescope/telescope.nvim)
+
+> if some plugins not found you can still used it, but you can use it
+
 ## install
 - lazy.nvim
 ```lua
 {
   'muryp/muryp-git-setup.nvim',
-  config = function()
-    require('muryp-git-setup').setup({})
-  end
 }
+```
+
+## configs
+```lua
+-- disable maps
+require('muryp-git-setup').useMaps = false
+-- rewrite maps
+require('muryp-git-setup').MAPS[1].t = {':cmdt<CR>','DESCRIPTIONt'}
+require('muryp-git-setup').MAPS[1].g = { name = 'some description', h = { ':cmdg<CR>','DESCRIPTIONg'},}
+require('muryp-git-setup').MAPS[2] = { prefix = "<leader>", noremap = true, mode = 'n', silent = true }
 ```
 
 ## Api
