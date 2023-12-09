@@ -1,4 +1,4 @@
-local picker = require "muryp-git-setup.picker"
+local picker = require 'muryp-git-setup.picker'
 local M = {}
 ---@class optsGitMainCmd : {ssh?:boolean,add?:boolean,commit?:boolean,pull?:boolean,push?:boolean,pull_quest?:boolean,remote_quest?:boolean,remote?:string} opts what todo
 
@@ -15,7 +15,7 @@ end
 ---@param callback function callback if success
 ---@return function exec when not conflict
 local cekConflick = function(callback)
-  local isConflict = vim.fn.system('git diff --check')
+  local isConflict = vim.fn.system 'git diff --check'
   if isConflict == '' then
     return callback()
   else
@@ -26,7 +26,7 @@ end
 ---@return function : return cmd git ?add, ?commit, ?pull, ?push with ?ssh
 M.gitMainCmd = function(opts)
   return cekConflick(function()
-    local isCommited = vim.fn.system('[[ $(git status --porcelain) ]] && echo true')
+    local isCommited = vim.fn.system '[[ $(git status --porcelain) ]] && echo true'
     local CMD = ''
     if isCommited ~= '' and opts.commit == true then
       if opts.add == true then
@@ -45,17 +45,17 @@ M.gitMainCmd = function(opts)
     if opts.remote_quest ~= nil then
       REMOTE = vim.fn.input('what remote ? ', REMOTE)
       if REMOTE == '' then
-        return vim.api.nvim_err_writeln('ERR: please input remote name')
+        return vim.api.nvim_err_writeln 'ERR: please input remote name'
       end
     end
     local isPull = ''
     local TARGET_HOST = ''
     if opts.pull == true or opts.push == true then
-      BRANCH = vim.fn.system('git symbolic-ref --short HEAD'):gsub('\n', ''):gsub('\r', '')
+      local BRANCH = vim.fn.system('git symbolic-ref --short HEAD'):gsub('\n', ''):gsub('\r', '')
       TARGET_HOST = REMOTE .. ' ' .. BRANCH
     end
     if opts.pull_quest == true then
-      isPull = vim.fn.input('Use PUll (y/n) ? ')
+      isPull = vim.fn.input 'Use PUll (y/n) ? '
     end
     if opts.pull == true or isPull == 'y' or isPull == 'Y' then
       vim.cmd('term ' .. SSH_CMD .. 'git pull ' .. TARGET_HOST)
@@ -71,17 +71,16 @@ M.gitMainCmd = function(opts)
   end)
 end
 
-
 --- TELESCOPE
 
 ---@return nil gitPull git pull with opts remote
 M.listRemote = function(callback)
-  local LIST_REMOTE = vim.fn.systemlist("git remote") --- @type string[]
-  picker({
+  local LIST_REMOTE = vim.fn.systemlist 'git remote' --- @type string[]
+  picker {
     opts = LIST_REMOTE,
     callBack = callback,
-    title = "choose remote"
-  })
+    title = 'choose remote',
+  }
 end
 
 ---@param selection string|string[] user select
@@ -108,14 +107,13 @@ M.push = function()
   ---defind callback/after enter
   ---@param selection string|string[] user select
   local callback = function(selection)
-    cmdGitMain(selection,
-      {
-        add = true,
-        commit = true,
-        ssh = true,
-        pull_quest = true,
-        push = true,
-      })
+    cmdGitMain(selection, {
+      add = true,
+      commit = true,
+      ssh = true,
+      pull_quest = true,
+      push = true,
+    })
   end
   M.listRemote(callback)
 end
@@ -125,11 +123,10 @@ M.pull = function()
   ---defind callback/after enter
   ---@param selection string|string[] user select
   local callback = function(selection)
-    cmdGitMain(selection,
-      {
-        ssh = true,
-        pull = true,
-      })
+    cmdGitMain(selection, {
+      ssh = true,
+      pull = true,
+    })
   end
   M.listRemote(callback)
 end
@@ -137,18 +134,17 @@ end
 M.gitFlow = function()
   local ListBranch = {} ---@type string[]
   local NAME_CURRENT_BRANCH = vim.fn.system('echo $(git symbolic-ref --short HEAD)'):gsub('\n', ''):gsub('\r', '') ---@type string
-  ListBranch = {}
-  for branch in io.popen("git branch --list | grep -v $(git rev-parse --abbrev-ref HEAD)"):lines() do
+  for branch in io.popen('git branch --list | grep -v $(git rev-parse --abbrev-ref HEAD)'):lines() do
     table.insert(ListBranch, branch)
   end
   local function callback(selection)
     vim.cmd('term git checkout ' .. selection .. ' && git merge ' .. NAME_CURRENT_BRANCH)
   end
 
-  picker({
+  picker {
     opts = ListBranch,
     callBack = callback,
-    title = "choose branch want to merge"
-  })
+    title = 'choose branch want to merge',
+  }
 end
 return M
