@@ -1,4 +1,8 @@
 {
   "workspace.library": [
+    "../muryp-gh.nvim/lua",
+    "../telescope.nvim/lua",
+    "../telescope.nvim/plugin",
+    "../octo.nvim/lua"
   ]
 }
