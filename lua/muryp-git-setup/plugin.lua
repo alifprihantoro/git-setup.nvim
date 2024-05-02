@@ -1,4 +1,5 @@
 return {
+  'pwntester/octo.nvim', -- for gh
   'nvim-telescope/telescope.nvim',
   'folke/which-key.nvim',
   'muryp/muryp-gh.nvim',
