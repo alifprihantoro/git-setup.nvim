@@ -11,7 +11,8 @@ if isTelescope then
   local git = require 'muryp-git-setup.api'
 
   plug.git_flow = git.gitFlow
-  plug.git_commit_ssh_push = git.push
+  plug.git_push = git.push
+  plug.git_commit_ssh_push = git.gitCommitPush
   plug.git_pull = git.pull
 end
 

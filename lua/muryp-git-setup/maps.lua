@@ -6,6 +6,7 @@ return function()
     f = { ':Telescope git_flow<CR>', 'FLOW' },
     S = { ':Telescope git_status<CR>', 'GIT_STATUS' },
     c = { ':term git commit<CR>', 'COMMIT' },
+    a = { ':term git commit --amend<CR>', 'COMMIT_AMEND' },
     v = {
       function()
         M.gitMainCmd {
@@ -99,7 +100,8 @@ return function()
     },
     o = {
       name = 'WITH TELESCOPE OPTS',
-      p = { ':Telescope git_commit_ssh_push<CR>', 'COMMIT+SSH+PULL+PUSH' },
+      p = { ':Telescope git_push<CR>', 'SSH+PUSH' },
+      v = { ':Telescope git_commit_ssh_push<CR>', 'COMMIT+SSH+PULL+PUSH' },
       P = { ':Telescope git_pull<CR>', 'PULL' },
     },
     d = {

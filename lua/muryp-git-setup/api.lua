@@ -102,8 +102,19 @@ local cmdGitMain = function(selection, opts)
   end
 end
 
----@return nil gitSshPush git commit, pull, push with opts remote
 M.push = function()
+  ---defind callback/after enter
+  ---@param selection string|string[] user select
+  local callback = function(selection)
+    cmdGitMain(selection, {
+      ssh = true,
+      push = true,
+    })
+  end
+  M.listRemote(callback)
+end
+---@return nil gitSshPush git commit, pull, push with opts remote
+M.gitCommitPush = function()
   ---defind callback/after enter
   ---@param selection string|string[] user select
   local callback = function(selection)
