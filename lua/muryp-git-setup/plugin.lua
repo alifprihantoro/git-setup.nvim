@@ -14,6 +14,13 @@ return {
       }
     end,
   },
+  {
+    'paopaol/telescope-git-diffs.nvim',
+    requires = {
+      'nvim-lua/plenary.nvim',
+      'sindrets/diffview.nvim',
+    },
+  },
   'nvim-telescope/telescope.nvim',
   'folke/which-key.nvim',
   'muryp/muryp-gh.nvim',
