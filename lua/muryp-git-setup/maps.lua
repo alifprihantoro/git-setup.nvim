@@ -4,7 +4,7 @@ return function()
     name = 'GIT',
     b = { ':Telescope git_branches<CR>', 'BRANCH' },
     f = { ':Telescope git_flow<CR>', 'FLOW' },
-    S = { ':Telescope git_status<CR>', 'GIT_STATUS' },
+    s = { ':Telescope git_status<CR>', 'GIT_STATUS' },
     c = { ':term git commit<CR>', 'COMMIT' },
     a = { ':term git commit --amend<CR>', 'COMMIT_AMEND' },
     v = {
