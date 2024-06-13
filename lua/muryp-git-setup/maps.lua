@@ -107,7 +107,7 @@ return function()
     d = {
       name = 'DIFF_VIEW',
       o = { ':DiffviewOpen<CR>', 'DIFF_OPEN' },
-      c = { ':DiffviewClose<CR>', 'DIFF_CLOSE' },
+      q = { ':DiffviewClose<CR>', 'DIFF_CLOSE' },
       t = { ':DiffviewFileHistory<CR>', 'FILE_HISTORY' },
       f = { require('telescope').extensions.git_diffs.diff_commits, 'FILE_HISTORY' },
     },
